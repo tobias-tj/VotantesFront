@@ -102,13 +102,15 @@ export default function Home() {
   }, [token, filters]);
 
   useEffect(() => {
+    if (!showAddModal) return;
     const fetchDirigentes = async () => {
       if (!token) return;
       const data = await getDirigentes();
       setDirigentes(data);
     };
     fetchDirigentes();
-  }, [token]);
+  }, [showAddModal]);
+
 
 
   useEffect(() => {
