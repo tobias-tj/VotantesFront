@@ -18,9 +18,11 @@ export const getDirigentes = async (): Promise<Dirigente[]> => {
 export const getProblemCards = async (): Promise<ProblemCardsResponse[]> => {
   try {
     const response =
-      await axiosInstance.get<ApiResponse<any[]>>(
+      await axiosInstance.get<ApiResponse<ProblemCardsResponse[]>>(
         "/dirigente/obtenerEstadisticas"
       )
+
+    console.log(response.data.data);
 
     return response.data.data.map((group) => ({
       cedulaDirigente: group.cedulaDirigente,
@@ -28,6 +30,7 @@ export const getProblemCards = async (): Promise<ProblemCardsResponse[]> => {
       totalPlanillas: Number(group.totalPlanillas),
       totalEnviados: Number(group.totalEnviados),
       totalNoEncontrados: Number(group.totalNoEncontrados),
+      votantesValidos: Number(group.votantesValidos),
 
       planillas: group.planillas.map((p: any) => ({
         planillaId: p.planilla_id,

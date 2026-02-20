@@ -11,6 +11,7 @@ export const mapProblemCards = (d: ProblemCardsResponse): ProblemCardsResponse =
   totalPlanillas: d.totalPlanillas,
   totalEnviados: d.totalEnviados,
   totalNoEncontrados: d.totalNoEncontrados,
+  votantesValidos: d.votantesValidos,
   planillas: d.planillas.map((p) => ({
     planillaId: p.planillaId,
     fechaCreacion: p.fechaCreacion,

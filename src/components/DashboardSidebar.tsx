@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext";
 
-export type DashboardView = "tabla" | "estadisticas" | "problemas"
+export type DashboardView = "tabla" | "estadisticas" | "reportes"
 
 interface DashboardSidebarProps {
   currentView: DashboardView
@@ -43,8 +43,8 @@ export function DashboardSidebar({
     //   adminOnly: true,
     // },
     {
-      id: "problemas",
-      label: "Problemas",
+      id: "reportes",
+      label: "Reportes",
       icon: <AlertTriangle className="h-4 w-4" />,
       adminOnly: true,
     },

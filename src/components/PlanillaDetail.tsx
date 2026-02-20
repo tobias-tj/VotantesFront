@@ -48,6 +48,16 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
   const totalPlraSi = votantes.filter(v => v.votoPlra === "SI").length
   const totalInvalidLogic = votantes.filter(needsReview).length
 
+  const votantesValidos = votantes.filter(v => !needsReview(v))
+
+  const planillaSoloValidos: PlanillaDetalle = {
+    ...planilla,
+    planilla: {
+      ...planilla.planilla,
+      votantes: votantesValidos,
+    },
+  }
+
   return (
     <div className="space-y-5 rounded-lg border border-border/50 bg-muted/20 p-5">
       {/* Dirigente Header */}
@@ -73,7 +83,8 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
             variant="outline"
             size="sm"
             className="gap-2 text-xs"
-            onClick={() => downloadDetalleCSV(planilla)}
+            onClick={() => downloadDetalleCSV(planillaSoloValidos)}
+            disabled={votantesValidos.length === 0}
           >
             <Download className="h-3.5 w-3.5" />
             Descargar CSV
@@ -82,7 +93,8 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
             variant="outline"
             size="sm"
             className="gap-2 text-xs"
-            onClick={() => downloadDetallePDF(planilla)}
+            onClick={() => downloadDetallePDF(planillaSoloValidos)}
+            disabled={votantesValidos.length === 0}
           >
             <FileText className="h-3.5 w-3.5" />
             Descargar PDF
@@ -112,7 +124,7 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
                 variant="outline"
                 className="cursor-pointer gap-1.5 border-destructive/30 bg-destructive/10 px-3 py-1 text-xs text-destructive hover:bg-destructive/20"
               >
-                {planilla.planilla.totalNoExistentes} no válidos
+                {planilla.planilla.totalNoExistentes} no encontrados
                 <Info className="h-3 w-3 opacity-70" />
               </Badge>
             </PopoverTrigger>
@@ -120,7 +132,7 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
             <PopoverContent className="w-80 text-sm">
               <div className="space-y-2">
                 <p className="font-semibold text-foreground">
-                  ¿Qué significa “no válidos”?
+                  ¿Qué significa “no encontrados”?
                 </p>
                 <p className="text-muted-foreground text-xs leading-relaxed">
                   Estos son votantes que:
@@ -128,12 +140,8 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
 
                 <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
                   <li>No existen en la base de datos principal.</li>
-                  <li>Ya fueron cargados previamente por otro dirigente.</li>
                 </ul>
 
-                <p className="text-xs text-muted-foreground">
-                  Se recomienda revisar estos registros para evitar inconsistencias.
-                </p>
               </div>
             </PopoverContent>
           </Popover>

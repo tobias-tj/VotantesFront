@@ -1,4 +1,5 @@
-import type { Planilla, PlanillaDetalle } from "./types"
+import type { Planilla, PlanillaDetalle, ProblemCardsResponse } from "./types"
+import { formatDate } from "./utils"
 
 export function downloadCSV(data: Planilla[], filename: string = "planillas") {
   const headers = [
@@ -194,6 +195,165 @@ export function downloadDetallePDF(detalle: PlanillaDetalle) {
     </html>
   `
 
+  const printWindow = window.open("", "_blank")
+  if (printWindow) {
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.print()
+  }
+}
+
+
+
+/*
+ Reportes Dirigentes planilla
+*/
+export function downloadProblemCardCSV(card: ProblemCardsResponse) {
+  const meta = [
+    `Dirigente,${card.nombreDirigente}`,
+    `Cedula Dirigente,${card.cedulaDirigente}`,
+    `Total Enviados,${card.totalEnviados}`,
+    `Votantes Validos,${card.votantesValidos}`,
+    `Total No Validos,${card.totalEnviados - card.votantesValidos}`,
+    "",
+  ]
+  const headers = [
+    "Planilla ID", "Total Enviados", "Total Validos",
+    "Total No Validos", "Cedula Dirigente", "Fecha Creacion",
+  ]
+  const rows = card.planillas.map((p) => [
+    p.planillaId, card.totalEnviados, card.votantesValidos,
+    card.totalEnviados - card.votantesValidos, card.cedulaDirigente, formatDate(p.fechaCreacion),
+  ])
+  const csvContent = [...meta, headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `problema_${card.cedulaDirigente}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+export function downloadProblemCardPDF(card: ProblemCardsResponse) {
+  const planillaRows = card.planillas
+    .map(
+      (p) => `
+      <tr>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-family:monospace;font-size:13px">${p.planillaId}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right">${card.totalEnviados}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:600">${card.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:600">${card.totalEnviados - card.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px">${formatDate(p.fechaCreacion)}</td>
+      </tr>`
+    )
+    .join("")
+  const validPct = card.totalEnviados > 0 ? Math.round((card.votantesValidos / card.totalEnviados) * 100) : 0
+  const html = `
+    <html>
+    <head><title>Reporte - ${card.nombreDirigente}</title></head>
+    <body style="font-family:'Segoe UI',Arial,sans-serif;padding:30px;color:#1e293b;max-width:900px;margin:0 auto">
+      <div style="border-bottom:3px solid #1e40af;padding-bottom:16px;margin-bottom:24px">
+        <h1 style="color:#1e40af;margin:0;font-size:22px">Reporte - ${card.nombreDirigente}</h1>
+        <p style="color:#64748b;margin:6px 0 0;font-size:13px">Generado: ${new Date().toLocaleDateString("es-PY")}</p>
+      </div>
+      <div style="display:flex;gap:24px;margin-bottom:24px">
+        <div style="flex:1;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+          <p style="margin:0 0 4px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">Dirigente</p>
+          <p style="margin:0;font-size:16px;font-weight:700">${card.nombreDirigente}</p>
+          <p style="margin:4px 0 0;font-size:13px;font-family:monospace;color:#64748b">${card.cedulaDirigente}</p>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div style="padding:16px;background:#ecfdf5;border-radius:8px;text-align:center;min-width:100px;border:1px solid #a7f3d0">
+            <p style="margin:0;font-size:28px;font-weight:800;color:#047857">${card.votantesValidos}</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#047857;text-transform:uppercase;letter-spacing:0.5px">Validos (${validPct}%)</p>
+          </div>
+          <div style="padding:16px;background:#fef2f2;border-radius:8px;text-align:center;min-width:100px;border:1px solid #fecaca">
+            <p style="margin:0;font-size:28px;font-weight:800;color:#dc2626">${card.totalEnviados - card.votantesValidos}</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#dc2626;text-transform:uppercase;letter-spacing:0.5px">No validos</p>
+          </div>
+        </div>
+      </div>
+      <h2 style="color:#1e40af;font-size:15px;margin-bottom:12px">Detalle de Planillas</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#1e40af;color:white">
+            <th style="padding:10px 12px;text-align:left">Planilla ID</th>
+            <th style="padding:10px 12px;text-align:right">Enviados</th>
+            <th style="padding:10px 12px;text-align:right">Validos</th>
+            <th style="padding:10px 12px;text-align:right">No Validos</th>
+            <th style="padding:10px 12px;text-align:left">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>${planillaRows}</tbody>
+      </table>
+    </body></html>
+  `
+  const printWindow = window.open("", "_blank")
+  if (printWindow) {
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.print()
+  }
+}
+
+export function downloadAllProblemCardsCSV(cards: ProblemCardsResponse[]) {
+  const headers = [
+    "Cedula Dirigente", "Nombre Dirigente", "Total Enviados",
+    "Votantes Validos", "Total No Validos", "Planilla IDs",
+  ]
+  const rows = cards.map((c) => [
+    c.cedulaDirigente, `"${c.nombreDirigente}"`, c.totalEnviados,
+    c.votantesValidos, c.totalEnviados - c.votantesValidos,
+    `"${c.planillas.map((p) => p.planillaId).join("; ")}"`,
+  ])
+  const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = "planillas-problemas-resumen.csv"
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+export function downloadAllProblemCardsPDF(cards: ProblemCardsResponse[]) {
+  const cardRows = cards
+    .map(
+      (c) => `
+      <tr>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-family:monospace;font-size:12px">${c.cedulaDirigente}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:600">${c.nombreDirigente}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right">${c.totalEnviados}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:700">${c.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:700">${c.totalEnviados - c.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;font-size:12px">${c.planillas.map((p) => p.planillaId).join(", ")}</td>
+      </tr>`
+    )
+    .join("")
+  const html = `
+    <html>
+    <head><title>Reporte de Planillas</title></head>
+    <body style="font-family:'Segoe UI',Arial,sans-serif;padding:30px;color:#1e293b;max-width:1000px;margin:0 auto">
+      <div style="border-bottom:3px solid #dc2626;padding-bottom:16px;margin-bottom:24px">
+        <h1 style="color:#1e40af;margin:0;font-size:22px">Reporte General - Planillas</h1>
+        <p style="color:#64748b;margin:6px 0 0;font-size:13px">Generado: ${new Date().toLocaleDateString("es-PY")} &mdash; ${cards.length} dirigentes con reportes</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#1e40af;color:white">
+            <th style="padding:10px 12px;text-align:left">Cedula</th>
+            <th style="padding:10px 12px;text-align:left">Dirigente</th>
+            <th style="padding:10px 12px;text-align:right">Enviados</th>
+            <th style="padding:10px 12px;text-align:right">Validos</th>
+            <th style="padding:10px 12px;text-align:right">No Validos</th>
+            <th style="padding:10px 12px;text-align:left">Planillas</th>
+          </tr>
+        </thead>
+        <tbody>${cardRows}</tbody>
+      </table>
+    </body></html>
+  `
   const printWindow = window.open("", "_blank")
   if (printWindow) {
     printWindow.document.write(html)

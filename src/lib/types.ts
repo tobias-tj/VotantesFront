@@ -150,6 +150,7 @@ export interface ProblemCardsResponse {
   totalPlanillas: number;
   totalEnviados: number;
   totalNoEncontrados: number;
+  votantesValidos: number;
   planillas: ProblemCard[];
 }
 

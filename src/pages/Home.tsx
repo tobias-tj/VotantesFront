@@ -162,7 +162,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (currentView === "problemas") {
+    if (currentView === "reportes") {
       fetchProblemCards();
     }
   }, [currentView, token, isAdmin]);
@@ -228,15 +228,15 @@ export default function Home() {
               <h1 className="text-2xl font-bold tracking-tight text-foreground">
                 {currentView === "tabla" && "Planillas"}
                 {currentView === "estadisticas" && "Estadisticas Generales"}
-                {currentView === "problemas" && "Planillas con Problemas"}
+                {currentView === "reportes" && "Reportes"}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {currentView === "tabla" &&
                   "Gestione y consulte las planillas de votantes."}
                 {currentView === "estadisticas" &&
                   "Resumen general de votos y planillas del sistema."}
-                {currentView === "problemas" &&
-                  "Detalle de planillas con votos no encontrados."}
+                {currentView === "reportes" &&
+                  "Reportes de cada dirigente con su planilla creada"}
               </p>
             </div>
 
@@ -246,7 +246,7 @@ export default function Home() {
             )} */}
 
             {/* Problem Cards - show on problemas view */}
-            {isAdmin && currentView === "problemas" && (
+            {isAdmin && currentView === "reportes" && (
               <ProblemCards problemCards={problemCards} />
             )}
 

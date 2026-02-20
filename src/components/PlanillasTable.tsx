@@ -184,7 +184,7 @@ export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla }:
                 <TableHead className="font-semibold text-foreground">Cedula Planillero</TableHead>
                 <TableHead className="text-right font-semibold text-foreground">Enviados</TableHead>
                 <TableHead className="text-right font-semibold text-foreground">Validos</TableHead>
-                <TableHead className="text-right font-semibold text-foreground">No Validos</TableHead>
+                <TableHead className="text-right font-semibold text-foreground">No Encontrados</TableHead>
                 <TableHead className="font-semibold text-foreground">Fecha</TableHead>
               </TableRow>
             </TableHeader>
