@@ -1,7 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
 import { getDirigentes, getProblemCards } from "@/api/dirigente";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { addPlanilla, getEstadisticas, getPlanillas } from "@/api/planilla";
 import { useEffect, useState } from "react";
 import { DashboardSidebar, type DashboardView } from "@/components/DashboardSidebar";

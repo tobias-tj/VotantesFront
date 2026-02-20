@@ -1,4 +1,4 @@
-import type { Planilla, PlanillaDetalle, Votante } from "@/lib/types"
+import type { PlanillaDetalle, Votante } from "@/lib/types"
 import { downloadDetalleCSV, downloadDetallePDF } from "@/lib/download-utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,9 +11,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { AlertTriangle, Download, FileText, User, Users } from "lucide-react";
-import { getPlanillas } from "@/api/planilla"
-import { useAuth } from "@/context/AuthContext"
-import { cn } from "@/lib/utils"
 import {
   Popover,
   PopoverContent,
@@ -27,8 +24,6 @@ interface PlanillaDetailProps {
 }
 
 export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
-  const { user } = useAuth();
-
   const votantes = planilla.planilla.votantes
 
   const votoBadge = (val: string) => {
@@ -46,7 +41,6 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
   }
 
   const totalPlraSi = votantes.filter(v => v.votoPlra === "SI").length
-  const totalInvalidLogic = votantes.filter(needsReview).length
 
   const votantesValidos = votantes.filter(v => !needsReview(v))
 

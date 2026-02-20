@@ -1,6 +1,6 @@
 import type { ApiResponse } from "./apiResponse";
 import axiosInstance from "./config/axiosInstance";
-import { mapDirigente, mapProblemCards } from "./mappers/dirigente.mapper";
+import { mapDirigente } from "./mappers/dirigente.mapper";
 import type { Dirigente, GetDirigentesResponse, ProblemCardsResponse } from "@/lib/types";
 
 export const getDirigentes = async (): Promise<Dirigente[]> => {

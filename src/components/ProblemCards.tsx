@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, CalendarDays, Download, FileText, Hash, User, Users, XCircle } from "lucide-react"
-import { downloadAllProblemCardsCSV, downloadAllProblemCardsPDF, downloadCSV, downloadPDF, downloadProblemCardCSV, downloadProblemCardPDF } from "@/lib/download-utils"
+import { downloadAllProblemCardsCSV, downloadAllProblemCardsPDF, downloadProblemCardCSV, downloadProblemCardPDF } from "@/lib/download-utils"
 import type { ProblemCardsResponse } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
 

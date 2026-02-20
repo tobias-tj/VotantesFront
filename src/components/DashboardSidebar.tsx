@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Vote,
-  LayoutDashboard,
   FileSpreadsheet,
-  BarChart3,
   AlertTriangle,
   X,
 } from "lucide-react"
