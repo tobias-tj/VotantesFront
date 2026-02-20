@@ -1,4 +1,4 @@
-import type { Planilla, PlanillaDetalle, PlanillaResponse } from "@/lib/types";
+import type { Planilla, PlanillaDetalle, PlanillaResponse, ProblemCard, ProblemCardsResponse } from "@/lib/types";
 import { mapVotante } from "./votante.mapper";
 
 export const mapPlanilla = (p: PlanillaResponse): Planilla => ({
@@ -36,4 +36,5 @@ export const mapPlanillaDetalle = (p: Planilla): PlanillaDetalle => ({
         nombre_completo: p.nombrePlanillero
     },
 });
+
 

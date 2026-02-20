@@ -36,12 +36,12 @@ export function DashboardSidebar({
       icon: <FileSpreadsheet className="h-4 w-4" />,
       adminOnly: false,
     },
-    {
-      id: "estadisticas",
-      label: "Estadisticas",
-      icon: <BarChart3 className="h-4 w-4" />,
-      adminOnly: true,
-    },
+    // {
+    //   id: "estadisticas",
+    //   label: "Estadisticas",
+    //   icon: <BarChart3 className="h-4 w-4" />,
+    //   adminOnly: true,
+    // },
     {
       id: "problemas",
       label: "Problemas",

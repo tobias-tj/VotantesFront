@@ -1,18 +1,20 @@
 import { useAuth } from "@/context/AuthContext";
-import { getDirigentes } from "@/api/dirigente";
+import { getDirigentes, getProblemCards } from "@/api/dirigente";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { addPlanilla, getPlanillas } from "@/api/planilla";
+import { addPlanilla, getEstadisticas, getPlanillas } from "@/api/planilla";
 import { useEffect, useState } from "react";
 import { DashboardSidebar, type DashboardView } from "@/components/DashboardSidebar";
-import type { AddPlanillaRequest, AlertState, Dirigente, PaginatedResponse, Planilla, PlanillaFilters } from "@/lib/types";
+import type { AddPlanillaRequest, AlertState, Dirigente, GetEstadisticasResponseDTO, PaginatedResponse, Planilla, PlanillaFilters, ProblemCardsResponse } from "@/lib/types";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { PlanillasTable } from "@/components/PlanillasTable";
 import { AddPlanillaModal } from "@/components/AddPlanillaModal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ProblemCards } from "@/components/ProblemCards";
+import { AdminStats } from "@/components/AdminStats";
 
 export default function Home() {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
   const [currentView, setCurrentView] = useState<DashboardView>("tabla")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -27,6 +29,15 @@ export default function Home() {
   const [planillasPage, setPlanillasPage] = useState<PaginatedResponse<Planilla> | null>(null);
   const [dirigentes, setDirigentes] = useState<Dirigente[]>([]);
   const [alert, setAlert] = useState<AlertState | null>(null);
+  const [problemCards, setProblemCards] = useState<ProblemCardsResponse[]>([]);
+  const [estadisticas, setEstadisticas] = useState<GetEstadisticasResponseDTO>({
+    totalPlanillas: 0,
+    totalValidos: 0,
+    totalNoEncontrados: 0,
+    totalEnviados: 0,
+  });
+
+
 
 
 
@@ -37,9 +48,9 @@ export default function Home() {
     try {
       const response = await addPlanilla(newPlanilla);
 
-      const { planillaId, cedulasRepetidas } = response.data;
+      const { planillaId, cedulasRepetidas, totalInsertados } = response.data;
 
-      if (!planillaId) {
+      if (totalInsertados === 0 || totalInsertados === null) {
         if (cedulasRepetidas.length > 0) {
           setAlert({
             type: "error",
@@ -60,19 +71,24 @@ export default function Home() {
       if (cedulasRepetidas.length > 0) {
         setAlert({
           type: "warning",
-          title: "Planilla creada parcialmente",
+          title: `Planilla creada parcialmente ID: ${planillaId}`,
           description: `Se creó correctamente, pero las siguientes cédulas ya estaban registradas: ${cedulasRepetidas.join(", ")}`,
         });
       } else {
         setAlert({
           type: "success",
-          title: "Planilla creada correctamente",
-          description: "La planilla fue registrada sin inconvenientes.",
+          title: `Planilla creada correctamente ID: ${planillaId}`,
+          description: `Se insertaron ${totalInsertados} votantes.`,
         });
       }
 
       const data = await getPlanillas(filters);
       setPlanillasPage(data);
+
+      if (isAdmin) {
+        fetchEstadisticas();
+        fetchProblemCards();
+      }
 
       return response;
 
@@ -122,6 +138,42 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, [alert]);
+
+  const fetchEstadisticas = async () => {
+    if (!token || !isAdmin) return;
+
+    try {
+      const data = await getEstadisticas();
+      setEstadisticas(data);
+    } catch (error) {
+      console.error("Error cargando estadísticas", error);
+    }
+  };
+
+  const fetchProblemCards = async () => {
+    if (!token || !isAdmin) return;
+
+    try {
+      const data = await getProblemCards();
+      setProblemCards(data);
+    } catch (error) {
+      console.error("Error cargando problem cards", error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentView === "problemas") {
+      fetchProblemCards();
+    }
+  }, [currentView, token, isAdmin]);
+
+  useEffect(() => {
+    if (currentView === "estadisticas" || currentView === "tabla") {
+      fetchEstadisticas();
+    }
+  }, [currentView, token, isAdmin]);
+
+
 
 
   const getAlertStyles = (type: AlertState["type"]) => {
@@ -190,20 +242,20 @@ export default function Home() {
 
             {/* Admin Stats - show on estadisticas view */}
             {/* {isAdmin && currentView === "estadisticas" && (
-              <AdminStats planillas={planillas} />
+              <AdminStats estadisticas={estadisticas} />
             )} */}
 
             {/* Problem Cards - show on problemas view */}
-            {/* {isAdmin && currentView === "problemas" && (
-              <ProblemCards planillas={planillas} />
-            )} */}
+            {isAdmin && currentView === "problemas" && (
+              <ProblemCards problemCards={problemCards} />
+            )}
 
             {/* Table - show on tabla view, and also on estadisticas */}
-            {(currentView === "tabla" || currentView === "estadisticas") && (
+            {(currentView === "tabla") && (
               <>
-                {/* {isAdmin && currentView === "tabla" && (
-                  <AdminStats planillas={planillas} />
-                )} */}
+                {isAdmin && currentView === "tabla" && (
+                  <AdminStats estadisticas={estadisticas} />
+                )}
                 {planillasPage && (
                   <PlanillasTable
                     data={planillasPage}

@@ -119,22 +119,12 @@ export interface AddPlanillaRequest {
   cedulasVotantes: number[];
 }
 
-/**
- * {
-  "success": true,
-  "data": {
-    "planillaId": 57,
-    "cedulasRepetidas": []
-  },
-  "message": "Planilla creada exitosamente"
-}
- * 
- */
 export interface AddPlanillaResponse{
   success: boolean;
   data: {
     planillaId: number;
     cedulasRepetidas: number[];
+    totalInsertados: number;
   };
   message: string;
 }
@@ -146,3 +136,27 @@ export interface AlertState {
   title: string;
   description: string;
 }
+
+export interface ProblemCard {
+  planillaId: number;
+  fechaCreacion: string;
+  totalEnviados: number;
+  totalNoEncontrados: number;
+}
+
+export interface ProblemCardsResponse {
+  cedulaDirigente: number;
+  nombreDirigente: string;
+  totalPlanillas: number;
+  totalEnviados: number;
+  totalNoEncontrados: number;
+  planillas: ProblemCard[];
+}
+
+export interface GetEstadisticasResponseDTO {
+    totalPlanillas: number;
+    totalEnviados: number;
+    totalValidos: number;
+    totalNoEncontrados: number;
+}
+

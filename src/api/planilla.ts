@@ -1,6 +1,7 @@
 import { mapPlanilla } from "./mappers/planilla.mapper";
-import type { Planilla, PlanillaFilters, PaginatedResponse, AddPlanillaRequest, AddPlanillaResponse } from "@/lib/types";
+import type { Planilla, PlanillaFilters, PaginatedResponse, AddPlanillaRequest, AddPlanillaResponse, GetEstadisticasResponseDTO } from "@/lib/types";
 import axiosInstance from "./config/axiosInstance";
+import type { ApiResponse } from "./apiResponse";
 
 
 export const getPlanillas = async (
@@ -52,5 +53,16 @@ export const addPlanilla = async (
     throw error;
   }
 };
+
+export const getEstadisticas = async (): Promise<GetEstadisticasResponseDTO> => {
+  try {
+    const response = await axiosInstance.get<ApiResponse<GetEstadisticasResponseDTO>>(`/planilla/obtenerEstadisticas`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al obtener las estadísticas:", error);
+    throw error;
+  }
+};
+
 
 
