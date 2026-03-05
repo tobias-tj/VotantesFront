@@ -10,21 +10,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { AlertTriangle, Download, FileText, User, Users } from "lucide-react";
+import { AlertTriangle, Download, FileText, Trash, User, Users } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Info } from "lucide-react"
+import { useState } from "react"
+import { Checkbox } from "./ui/checkbox"
 
 
 interface PlanillaDetailProps {
   planilla: PlanillaDetalle
+  handleDelete: (id: number, deleteDirigente: boolean) => void
 }
 
-export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
+export function PlanillaDetail({ planilla, handleDelete }: PlanillaDetailProps) {
   const votantes = planilla.planilla.votantes
+  const [deleteDirigente, setDeleteDirigente] = useState(false)
+  const [open, setOpen] = useState(false)
+
 
   const votoBadge = (val: string) => {
     if (val === "SI") return "border-success/30 bg-success/10 text-success"
@@ -34,13 +40,11 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
 
   const needsReview = (v: Votante) => {
     return (
-      v.votoPlra !== "SI" ||
-      !v.afiliaciones?.includes("PLRA") ||
       v.afiliadoPlra2025 !== "SI"
     )
   }
 
-  const totalPlraSi = votantes.filter(v => v.votoPlra === "SI").length
+  // const totalPlraSi = votantes.filter(v => v.afiliadoPlra2025 === "SI").length
 
   const votantesValidos = votantes.filter(v => !needsReview(v))
 
@@ -70,6 +74,74 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
             <p className="font-mono text-sm text-muted-foreground">
               {planilla.dirigente.cedula}
             </p>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2 text-xs mt-2"
+                >
+                  <Trash className="h-3.5 w-3.5" />
+                  Eliminar Planilla
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-72 p-4">
+                <div className="space-y-4">
+
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Confirmar eliminación
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Esta acción eliminará la planilla y todos sus votantes asociados.
+                    </p>
+                  </div>
+
+                  {/* Checkbox */}
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="deleteDirigente"
+                      checked={deleteDirigente}
+                      onCheckedChange={(checked) =>
+                        setDeleteDirigente(checked === true)
+                      }
+                    />
+                    <label
+                      htmlFor="deleteDirigente"
+                      className="text-xs text-muted-foreground leading-snug cursor-pointer"
+                    >
+                      También eliminar el dirigente asociado
+                    </label>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDeleteDirigente(false)
+                        setOpen(false)
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() =>
+                        handleDelete(planilla.planilla.id, deleteDirigente)
+                      }
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -105,11 +177,11 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
         {/* <Badge variant="outline" className="gap-1.5 border-success/30 bg-success/10 px-3 py-1 text-xs text-success">
           {planilla.planilla.totalValidos} validos
         </Badge> */}
-        {totalPlraSi > 0 && (
+        {/* {totalPlraSi > 0 && (
           <Badge variant="outline" className="gap-1.5 border-success/40 bg-success/10 px-3 py-1 text-xs text-success">
             {totalPlraSi} PLRA confirmados
           </Badge>
-        )}
+        )} */}
 
         {planilla.planilla.totalNoExistentes > 0 && (
           <Popover>
@@ -243,6 +315,58 @@ export function PlanillaDetail({ planilla }: PlanillaDetailProps) {
           </TableBody>
         </Table>
       </div>
+
+      {planilla.planilla.noEncontrados.length > 0 && (
+        <div className="mt-6 max-w-md rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <h3 className="text-xs font-semibold text-destructive">
+                No encontrados
+              </h3>
+            </div>
+
+            <Badge
+              variant="outline"
+              className="border-destructive/40 bg-destructive/10 text-destructive text-[10px]"
+            >
+              {planilla.planilla.noEncontrados.length}
+            </Badge>
+          </div>
+
+          <div className="overflow-hidden rounded-md border border-destructive/20">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-destructive/10">
+                  <TableHead className="text-[11px] font-semibold text-destructive">
+                    Cédula
+                  </TableHead>
+                  <TableHead className="text-[11px] font-semibold text-destructive">
+                    Fecha
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {planilla.planilla.noEncontrados.map((v, i) => (
+                  <TableRow
+                    key={i}
+                    className="hover:bg-destructive/5 transition-colors"
+                  >
+                    <TableCell className="font-mono text-xs">
+                      {v.cedula_intentada}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(v.fecha_registro).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
 
       {/* Planillero footer */}
       <div className="flex items-center gap-3 rounded-md border border-border bg-card p-4">

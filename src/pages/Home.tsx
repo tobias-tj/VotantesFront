@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { getDirigentes, getProblemCards } from "@/api/dirigente";
-import { addPlanilla, getEstadisticas, getPlanillas } from "@/api/planilla";
+import { addPlanilla, deletePlanilla, getEstadisticas, getPlanillas } from "@/api/planilla";
 import { useEffect, useState } from "react";
 import { DashboardSidebar, type DashboardView } from "@/components/DashboardSidebar";
 import type { AddPlanillaRequest, AlertState, Dirigente, GetEstadisticasResponseDTO, PaginatedResponse, Planilla, PlanillaFilters, ProblemCardsResponse } from "@/lib/types";
@@ -98,6 +98,33 @@ export default function Home() {
       });
 
       throw err;
+    }
+  };
+
+  const handleDelete = async (id: number, deleteDirigente: boolean) => {
+    const response = await deletePlanilla(id, deleteDirigente);
+
+    if (response.success) {
+      setAlert({
+        type: "success",
+        title: "Planilla eliminada correctamente",
+        description: response.message,
+      });
+
+      const data = await getPlanillas(filters);
+      setPlanillasPage(data);
+
+      if (isAdmin) {
+        fetchEstadisticas();
+        fetchProblemCards();
+      }
+
+    } else {
+      setAlert({
+        type: "error",
+        title: "Error al eliminar la planilla",
+        description: response.message,
+      });
     }
   };
 
@@ -260,6 +287,7 @@ export default function Home() {
                     filters={filters}
                     onFilterChange={setFilters}
                     onAddPlanilla={() => setShowAddModal(true)}
+                    onDeletePlanilla={handleDelete}
                   />
                 )}
               </>

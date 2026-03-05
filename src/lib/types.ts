@@ -14,6 +14,12 @@ export interface Planilla {
   totalValidos: number;
   totalNoExistentes: number;
   votantes: Votante[];
+  noEncontrados: VotanteNoEncontrado[];
+}
+
+export interface VotanteNoEncontrado {
+  cedula_intentada: number;
+  fecha_registro: Date;
 }
 
 
@@ -109,6 +115,7 @@ export interface PlanillaResponse {
   totalValidos: number;
   totalNoExistentes: number;
   votantes: VotanteResponse[];
+  noEncontrados: VotanteNoEncontrado[];
 }
 
 
@@ -119,7 +126,7 @@ export interface AddPlanillaRequest {
   cedulasVotantes: number[];
 }
 
-export interface AddPlanillaResponse{
+export interface AddPlanillaResponse {
   success: boolean;
   data: {
     planillaId: number;
@@ -142,6 +149,7 @@ export interface ProblemCard {
   fechaCreacion: string;
   totalEnviados: number;
   totalNoEncontrados: number;
+  noEncontrados: VotanteNoEncontrado[];
 }
 
 export interface ProblemCardsResponse {
@@ -150,14 +158,13 @@ export interface ProblemCardsResponse {
   totalPlanillas: number;
   totalEnviados: number;
   totalNoEncontrados: number;
-  votantesValidos: number;
   planillas: ProblemCard[];
 }
 
 export interface GetEstadisticasResponseDTO {
-    totalPlanillas: number;
-    totalEnviados: number;
-    totalValidos: number;
-    totalNoEncontrados: number;
+  totalPlanillas: number;
+  totalEnviados: number;
+  totalValidos: number;
+  totalNoEncontrados: number;
 }
 

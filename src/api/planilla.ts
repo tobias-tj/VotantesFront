@@ -18,6 +18,7 @@ export const getPlanillas = async (
 
     const data = response.data;
 
+
     return {
       content: data.content.map(mapPlanilla),
       page: data.page,
@@ -38,7 +39,6 @@ export const addPlanilla = async (
 
   try {
 
-    console.log("Intentando crear planilla", planilla);
     const response = await axiosInstance.post(
       `/planilla/create`,
       planilla
@@ -61,6 +61,26 @@ export const getEstadisticas = async (): Promise<GetEstadisticasResponseDTO> => 
   } catch (error) {
     console.error("Error al obtener las estadísticas:", error);
     throw error;
+  }
+};
+
+export const deletePlanilla = async (
+  id: number,
+  deleteDirigente: boolean
+) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/planilla/borrar/${id}?deleteDirigente=${deleteDirigente}`
+    );
+
+    return response.data; // { success, message }
+  } catch (error: any) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        "Error inesperado al eliminar la planilla",
+    };
   }
 };
 

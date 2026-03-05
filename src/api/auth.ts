@@ -5,15 +5,15 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 
-export interface LoginResponse{
+export interface LoginResponse {
     user: User;
     token: string;
 }
 
 
-export const login = async (cedulaPlanillero: number, password: string): Promise<LoginResponse> => {
-    try{
-        const response = await axios.post(`${BASE_URL}/access/login`, { cedulaPlanillero, password });
+export const login = async (cedulaPlanillero: number, password: string, selectedCityType: number): Promise<LoginResponse> => {
+    try {
+        const response = await axios.post(`${BASE_URL}/access/login`, { cedulaPlanillero, password, selectedCityType });
         const { result, token } = response.data.data;
         const user: User = {
             id: result.cedulaPlanillero,
@@ -21,11 +21,11 @@ export const login = async (cedulaPlanillero: number, password: string): Promise
             isAdmin: result.isAdmin
         };
         return { user, token };
-        
-     } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.data?.error) {
-        throw new Error(err.response.data.error);
-      }
-      throw new Error("Error al iniciar sesión");
+
+    } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.error) {
+            throw new Error(err.response.data.error);
+        }
+        throw new Error("Error al iniciar sesión");
     }
 }

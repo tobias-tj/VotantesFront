@@ -280,11 +280,11 @@ export function AddPlanillaModal({
                         </div>
 
                         <Textarea
-                            placeholder={`Ingrese cédulas separadas por comas`}
+                            placeholder={`Pegue o escriba cédulas separadas por coma o enter`}
                             value={votantesText}
                             onChange={(e) => setVotantesText(e.target.value)}
                             rows={6}
-                            className="font-mono text-sm"
+                            className="font-mono text-sm whitespace-pre-wrap break-words overflow-x-hidden"
                         />
 
                         <div className="flex items-center gap-2">

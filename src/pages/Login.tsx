@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { login } from "@/api/auth";
 import { useAuth } from "@/context/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const loginSchema = z.object({
   cedula: z
@@ -18,6 +19,9 @@ const loginSchema = z.object({
     .int("Debe ser un número entero")
     .positive("Debe ser mayor a 0"),
   password: z.string().min(1, "Contraseña es requerida"),
+  selectedCityType: z.number({
+    error: "Debe seleccionar una ciudad",
+  }),
 });
 
 
@@ -30,7 +34,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login: authLogin } = useAuth();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -39,7 +43,7 @@ export default function Login() {
     setError(null);
 
     try {
-      const { user, token } = await login(data.cedula, data.password);
+      const { user, token } = await login(data.cedula, data.password, data.selectedCityType);
 
       authLogin(user, token);
       navigate("/home");
@@ -94,8 +98,37 @@ export default function Login() {
                 </Alert>
               )}
 
+              {/* CIUDAD */}
+              <div className="flex flex-col gap-2">
+                <Label>Ciudad</Label>
+
+                <Select
+                  onValueChange={(value) =>
+                    setValue("selectedCityType", Number(value), {
+                      shouldValidate: true,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione una ciudad" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="0">Fernando de la Mora</SelectItem>
+                    <SelectItem value="1">Asunción</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {errors.selectedCityType && (
+                  <span className="text-xs text-destructive">
+                    {errors.selectedCityType.message}
+                  </span>
+                )}
+              </div>
+
               {/* CEDULA */}
               <div className="flex flex-col gap-2">
+
                 <Label htmlFor="cedula">Cédula / Usuario</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

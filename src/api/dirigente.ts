@@ -22,21 +22,22 @@ export const getProblemCards = async (): Promise<ProblemCardsResponse[]> => {
         "/dirigente/obtenerEstadisticas"
       )
 
-    console.log(response.data.data);
-
     return response.data.data.map((group) => ({
       cedulaDirigente: group.cedulaDirigente,
       nombreDirigente: group.nombreDirigente,
       totalPlanillas: Number(group.totalPlanillas),
       totalEnviados: Number(group.totalEnviados),
       totalNoEncontrados: Number(group.totalNoEncontrados),
-      votantesValidos: Number(group.votantesValidos),
 
       planillas: group.planillas.map((p: any) => ({
         planillaId: p.planilla_id,
         fechaCreacion: p.fecha_creacion,
         totalEnviados: Number(p.total_enviados),
         totalNoEncontrados: Number(p.total_no_encontrados),
+        noEncontrados: p.no_encontrados.map((ne: any) => ({
+          cedula_intentada: ne.cedula_intentada,
+          fecha_registro: ne.fecha_registro,
+        })),
       })),
     }))
   } catch (error) {

@@ -40,13 +40,14 @@ interface PlanillasTableProps {
   filters: PlanillaFilters;
   onFilterChange: (filters: PlanillaFilters) => void;
   onAddPlanilla: () => void
+  onDeletePlanilla: (id: number, deleteDirigente: boolean) => void
 }
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 25]
 
-export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla }: PlanillasTableProps) {
+export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla, onDeletePlanilla }: PlanillasTableProps) {
 
-  const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const toggleRow = (id: string) => {
     setExpandedRow((prev) => (prev === id ? null : id))
@@ -183,7 +184,6 @@ export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla }:
                 <TableHead className="font-semibold text-foreground">Nombre Dirigente</TableHead>
                 <TableHead className="font-semibold text-foreground">Cedula Planillero</TableHead>
                 <TableHead className="text-right font-semibold text-foreground">Enviados</TableHead>
-                <TableHead className="text-right font-semibold text-foreground">Validos</TableHead>
                 <TableHead className="text-right font-semibold text-foreground">No Encontrados</TableHead>
                 <TableHead className="font-semibold text-foreground">Fecha</TableHead>
               </TableRow>
@@ -221,14 +221,6 @@ export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla }:
                         {planilla.totalEnviados}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge
-                          variant="outline"
-                          className="border-success/30 bg-success/10 font-medium text-success"
-                        >
-                          {planilla.totalValidos}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
                         {planilla.totalNoExistentes > 0 ? (
                           <Badge
                             variant="outline"
@@ -248,7 +240,7 @@ export function PlanillasTable({ data, filters, onFilterChange, onAddPlanilla }:
                       <TableRow key={`${planilla.id}-detail`}>
                         <TableCell colSpan={9} className="p-0">
                           <div className="p-4" onClick={(e) => e.stopPropagation()}>
-                            <PlanillaDetail planilla={mapPlanillaDetalle(planilla)} />
+                            <PlanillaDetail planilla={mapPlanillaDetalle(planilla)} handleDelete={onDeletePlanilla} />
                           </div>
                         </TableCell>
                       </TableRow>

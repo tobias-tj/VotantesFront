@@ -213,25 +213,58 @@ export function downloadProblemCardCSV(card: ProblemCardsResponse) {
     `Dirigente,${card.nombreDirigente}`,
     `Cedula Dirigente,${card.cedulaDirigente}`,
     `Total Enviados,${card.totalEnviados}`,
-    `Votantes Validos,${card.votantesValidos}`,
-    `Total No Validos,${card.totalEnviados - card.votantesValidos}`,
+    `Votantes Validos,${card.totalEnviados - card.totalNoEncontrados}`,
+    `Total No Encontrados,${card.totalNoEncontrados}`,
     "",
   ]
+
+  // Tabla de planillas
   const headers = [
-    "Planilla ID", "Total Enviados", "Total Validos",
-    "Total No Validos", "Cedula Dirigente", "Fecha Creacion",
+    "Planilla ID",
+    "Total Enviados",
+    "Total Validos",
+    "Total No Encontrados",
+    "Cedula Dirigente",
+    "Fecha Creacion",
   ]
+
   const rows = card.planillas.map((p) => [
-    p.planillaId, card.totalEnviados, card.votantesValidos,
-    card.totalEnviados - card.votantesValidos, card.cedulaDirigente, formatDate(p.fechaCreacion),
+    p.planillaId,
+    card.totalEnviados,
+    card.totalEnviados - card.totalNoEncontrados,
+    card.totalNoEncontrados,
+    card.cedulaDirigente,
+    formatDate(p.fechaCreacion),
   ])
-  const csvContent = [...meta, headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
+
+  // ===== Cedulas no encontradas =====
+  const noEncontradosHeader = [
+    "CEDULAS NO ENCONTRADAS",
+  ]
+
+  const allCedulas = card.planillas.flatMap((p) =>
+    p.noEncontrados.map((ne) => [
+      ne.cedula_intentada,
+    ])
+  )
+
+  const csvContent = [
+    ...meta,
+    headers.join(","),
+    ...rows.map((r) => r.join(",")),
+    "",
+    noEncontradosHeader.join(","),
+    ...allCedulas.map((r) => r.join(",")),
+  ].join("\n")
+
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
+
   const link = document.createElement("a")
   link.href = url
   link.download = `problema_${card.cedulaDirigente}.csv`
   link.click()
+
   URL.revokeObjectURL(url)
 }
 
@@ -242,13 +275,13 @@ export function downloadProblemCardPDF(card: ProblemCardsResponse) {
       <tr>
         <td style="border:1px solid #d1d5db;padding:8px 12px;font-family:monospace;font-size:13px">${p.planillaId}</td>
         <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right">${card.totalEnviados}</td>
-        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:600">${card.votantesValidos}</td>
-        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:600">${card.totalEnviados - card.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:600">${card.totalEnviados - card.totalNoEncontrados}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:600">${card.totalNoEncontrados}</td>
         <td style="border:1px solid #d1d5db;padding:8px 12px">${formatDate(p.fechaCreacion)}</td>
       </tr>`
     )
     .join("")
-  const validPct = card.totalEnviados > 0 ? Math.round((card.votantesValidos / card.totalEnviados) * 100) : 0
+  const validPct = card.totalEnviados > 0 ? Math.round((card.totalEnviados - card.totalNoEncontrados) / card.totalEnviados * 100) : 0
   const html = `
     <html>
     <head><title>Reporte - ${card.nombreDirigente}</title></head>
@@ -265,12 +298,12 @@ export function downloadProblemCardPDF(card: ProblemCardsResponse) {
         </div>
         <div style="display:flex;gap:12px">
           <div style="padding:16px;background:#ecfdf5;border-radius:8px;text-align:center;min-width:100px;border:1px solid #a7f3d0">
-            <p style="margin:0;font-size:28px;font-weight:800;color:#047857">${card.votantesValidos}</p>
+            <p style="margin:0;font-size:28px;font-weight:800;color:#047857">${card.totalEnviados - card.totalNoEncontrados}</p>
             <p style="margin:4px 0 0;font-size:11px;color:#047857;text-transform:uppercase;letter-spacing:0.5px">Validos (${validPct}%)</p>
           </div>
           <div style="padding:16px;background:#fef2f2;border-radius:8px;text-align:center;min-width:100px;border:1px solid #fecaca">
-            <p style="margin:0;font-size:28px;font-weight:800;color:#dc2626">${card.totalEnviados - card.votantesValidos}</p>
-            <p style="margin:4px 0 0;font-size:11px;color:#dc2626;text-transform:uppercase;letter-spacing:0.5px">No validos</p>
+            <p style="margin:0;font-size:28px;font-weight:800;color:#dc2626">${card.totalNoEncontrados}</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#dc2626;text-transform:uppercase;letter-spacing:0.5px">No Encontrados</p>
           </div>
         </div>
       </div>
@@ -281,7 +314,7 @@ export function downloadProblemCardPDF(card: ProblemCardsResponse) {
             <th style="padding:10px 12px;text-align:left">Planilla ID</th>
             <th style="padding:10px 12px;text-align:right">Enviados</th>
             <th style="padding:10px 12px;text-align:right">Validos</th>
-            <th style="padding:10px 12px;text-align:right">No Validos</th>
+            <th style="padding:10px 12px;text-align:right">No Encontrados</th>
             <th style="padding:10px 12px;text-align:left">Fecha</th>
           </tr>
         </thead>
@@ -300,11 +333,11 @@ export function downloadProblemCardPDF(card: ProblemCardsResponse) {
 export function downloadAllProblemCardsCSV(cards: ProblemCardsResponse[]) {
   const headers = [
     "Cedula Dirigente", "Nombre Dirigente", "Total Enviados",
-    "Votantes Validos", "Total No Validos", "Planilla IDs",
+    "Votantes Validos", "Total No Encontrados", "Planilla IDs",
   ]
   const rows = cards.map((c) => [
     c.cedulaDirigente, `"${c.nombreDirigente}"`, c.totalEnviados,
-    c.votantesValidos, c.totalEnviados - c.votantesValidos,
+    c.totalEnviados - c.totalNoEncontrados, c.totalNoEncontrados,
     `"${c.planillas.map((p) => p.planillaId).join("; ")}"`,
   ])
   const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
@@ -325,8 +358,8 @@ export function downloadAllProblemCardsPDF(cards: ProblemCardsResponse[]) {
         <td style="border:1px solid #d1d5db;padding:8px 12px;font-family:monospace;font-size:12px">${c.cedulaDirigente}</td>
         <td style="border:1px solid #d1d5db;padding:8px 12px;font-weight:600">${c.nombreDirigente}</td>
         <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right">${c.totalEnviados}</td>
-        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:700">${c.votantesValidos}</td>
-        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:700">${c.totalEnviados - c.votantesValidos}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#047857;font-weight:700">${c.totalEnviados - c.totalNoEncontrados}</td>
+        <td style="border:1px solid #d1d5db;padding:8px 12px;text-align:right;color:#dc2626;font-weight:700">${c.totalNoEncontrados}</td>
         <td style="border:1px solid #d1d5db;padding:8px 12px;font-size:12px">${c.planillas.map((p) => p.planillaId).join(", ")}</td>
       </tr>`
     )
@@ -346,8 +379,8 @@ export function downloadAllProblemCardsPDF(cards: ProblemCardsResponse[]) {
             <th style="padding:10px 12px;text-align:left">Dirigente</th>
             <th style="padding:10px 12px;text-align:right">Enviados</th>
             <th style="padding:10px 12px;text-align:right">Validos</th>
-            <th style="padding:10px 12px;text-align:right">No Validos</th>
-            <th style="padding:10px 12px;text-align:left">Planillas</th>
+            <th style="padding:10px 12px;text-align:right">No Encontrados</th>
+            <th style="padding:10px 12px;text-align:left">Planilla ID</th>
           </tr>
         </thead>
         <tbody>${cardRows}</tbody>

@@ -12,6 +12,7 @@ export const mapPlanilla = (p: PlanillaResponse): Planilla => ({
     totalValidos: p.totalValidos,
     totalNoExistentes: p.totalNoExistentes,
     votantes: p.votantes.map(mapVotante),
+    noEncontrados: p.noEncontrados,
 });
 
 export const mapPlanillaDetalle = (p: Planilla): PlanillaDetalle => ({
@@ -26,6 +27,7 @@ export const mapPlanillaDetalle = (p: Planilla): PlanillaDetalle => ({
         totalValidos: p.totalValidos,
         totalNoExistentes: p.totalNoExistentes,
         votantes: p.votantes,
+        noEncontrados: p.noEncontrados,
     },
     dirigente: {
         cedula: p.cedulaDirigente,

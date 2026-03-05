@@ -5,6 +5,7 @@ import { AlertTriangle, CalendarDays, Download, FileText, Hash, User, Users, XCi
 import { downloadAllProblemCardsCSV, downloadAllProblemCardsPDF, downloadProblemCardCSV, downloadProblemCardPDF } from "@/lib/download-utils"
 import type { ProblemCardsResponse } from "@/lib/types"
 import { formatDate } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 
 interface ProblemCardsProps {
     problemCards: ProblemCardsResponse[];
@@ -113,6 +114,10 @@ export function ProblemCards({ problemCards }: ProblemCardsProps) {
 
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {problemCards.map((card) => {
+                    const allCedulas = card.planillas.flatMap((p) => p.noEncontrados)
+                    const visibleCedulas = allCedulas.slice(0, 6)
+                    const remaining = allCedulas.length - visibleCedulas.length
+
                     const severityLevel =
                         card.totalNoEncontrados >= 40 ? "critical" :
                             card.totalNoEncontrados >= 20 ? "high" : "medium"
@@ -163,7 +168,7 @@ export function ProblemCards({ problemCards }: ProblemCardsProps) {
                                         <div className="mt-3 flex flex-wrap items-center gap-2">
                                             <Badge variant="outline" className={styles.badgeBg}>
                                                 <XCircle className="mr-1 h-3 w-3" />
-                                                {card.totalEnviados - card.votantesValidos} no validos
+                                                {card.totalNoEncontrados} no encontrados
                                             </Badge>
                                             <Badge variant="outline" className="border-border bg-muted/50 text-muted-foreground">
                                                 <Users className="mr-1 h-3 w-3" />
@@ -173,7 +178,7 @@ export function ProblemCards({ problemCards }: ProblemCardsProps) {
                                     </div>
 
                                     <ValidosHighlight
-                                        validos={card.votantesValidos}
+                                        validos={card.totalEnviados - card.totalNoEncontrados}
                                         total={card.totalEnviados}
                                     />
                                 </div>
@@ -198,14 +203,10 @@ export function ProblemCards({ problemCards }: ProblemCardsProps) {
                                                         {formatDate(p.fechaCreacion)}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-xs font-semibold text-success">
-                                                        {card.votantesValidos}
-                                                        <span className="ml-0.5 font-normal text-muted-foreground">val.</span>
-                                                    </span>
+                                                <div className="flex items-center gap-1">
                                                     <span className="text-xs font-semibold text-destructive">
-                                                        {card.totalEnviados - card.votantesValidos}
-                                                        <span className="ml-0.5 font-normal text-muted-foreground">n/v</span>
+                                                        {card.totalNoEncontrados}
+                                                        <span className="ml-1 font-normal text-muted-foreground">n/e</span>
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
                                                         de {card.totalEnviados}
@@ -213,6 +214,61 @@ export function ProblemCards({ problemCards }: ProblemCardsProps) {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                            <Hash className="h-3 w-3" />
+                                            Cedulas No Encontradas
+                                            <span className="ml-1 rounded-md bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
+                                                {allCedulas.length}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            {visibleCedulas.map((ne, i) => (
+                                                <Badge
+                                                    key={`${ne.cedula_intentada}-${i}`}
+                                                    variant="outline"
+                                                    className="border-destructive/40 bg-destructive/10 text-destructive font-mono text-[11px]"
+                                                >
+                                                    {ne.cedula_intentada}
+                                                </Badge>
+                                            ))}
+
+                                            {remaining > 0 && (
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-6 px-2 text-[11px]"
+                                                        >
+                                                            +{remaining} más
+                                                        </Button>
+                                                    </PopoverTrigger>
+
+                                                    <PopoverContent className="w-64">
+                                                        <div className="flex flex-col gap-2">
+                                                            <span className="text-xs font-semibold text-muted-foreground">
+                                                                Todas las cédulas no encontradas
+                                                            </span>
+
+                                                            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                                                                {allCedulas.map((ne, i) => (
+                                                                    <Badge
+                                                                        key={`${ne.cedula_intentada}-${i}`}
+                                                                        variant="outline"
+                                                                        className="font-mono text-[11px]"
+                                                                    >
+                                                                        {ne.cedula_intentada}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </PopoverContent>
+                                                </Popover>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
